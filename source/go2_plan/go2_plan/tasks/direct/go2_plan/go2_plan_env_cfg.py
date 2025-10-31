@@ -5,7 +5,8 @@ from isaaclab.envs import DirectRLEnvCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
-
+from isaaclab.assets import ArticulationCfg
+from isaaclab_assets.robots.unitree import UNITREE_GO2_CFG 
 
 @configclass
 class Go2PlanEnvCfg(DirectRLEnvCfg):
@@ -13,13 +14,37 @@ class Go2PlanEnvCfg(DirectRLEnvCfg):
     decimation = 2
     episode_length_s = 10.0
 
-    # no action or observation spaces
-    action_space = 0
-    observation_space = 0
+    # RL interface (optional)
+    action_space = 12  # joints (for Go2 legs)
+    observation_space = 48  # arbitrary placeholder
     state_space = 0
 
     # simulation
     sim: SimulationCfg = SimulationCfg(dt=1 / 120, render_interval=decimation)
 
-    # scene
-    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=1, env_spacing=4.0, replicate_physics=False)
+    # robot configuration
+    robot_cfg: ArticulationCfg = UNITREE_GO2_CFG.replace(
+        prim_path="/World/envs/env_.*/Go2",
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(0.0, 0.0, 0.4),
+            rot=(1.0, 0.0, 0.0, 0.0),
+            joint_pos={
+                "FL_hip_joint": 0.0,
+                "FR_hip_joint": 0.0,
+                "RL_hip_joint": 0.0,
+                "RR_hip_joint": 0.0,
+                "FL_thigh_joint": 0.9,
+                "FR_thigh_joint": 0.9,
+                "RL_thigh_joint": 0.9,
+                "RR_thigh_joint": 0.9,
+                "FL_calf_joint": -1.8,
+                "FR_calf_joint": -1.8,
+                "RL_calf_joint": -1.8,
+                "RR_calf_joint": -1.8,
+            },
+        ),
+    )
+
+    scene: InteractiveSceneCfg = InteractiveSceneCfg(
+        num_envs=1, env_spacing=4.0, replicate_physics=True
+    )
